@@ -4,6 +4,11 @@ from . import db
 from .models import User, Clinic, Shift
 from .forms import LoginForm, ShiftForm
 from .utils import calculate_cash_end
+# app/routes.py
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment
+from flask import send_file
+import io
 
 main_bp = Blueprint('main', __name__)
 
@@ -68,7 +73,48 @@ def shift_form():
         db.session.commit()
         flash('Смена сохранена!')
         return redirect(url_for('main.shift_form'))
+@main_bp.route('/export')
+@login_required
+def export_excel():
+    shifts = Shift.query.filter_by(user_id=current_user.id).order_by(Shift.date).all()
+    
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "ЖКО"
 
+    # Заголовки (как в вашем файле)
+    headers = [
+        "Дата", "№ смены", "Показания ККТ на начало", "Показания ККТ на конец",
+        "НАЛ", "БЕЗНАЛ", "QR", "ВСЕГО", "Возврат Наличными", "Остаток на начало",
+        "Остаток на конец", "Инкасация", "Зарплата", "ПКО", "РКО", "Сдал"
+    ]
+    ws.append(headers)
+
+    # Данные
+    for s in shifts:
+        ws.append([
+            s.date, s.shift_number, s.counter_start, s.counter_end,
+            s.cash_in, s.card_in, s.qr_in, 
+            s.cash_in + s.card_in + s.qr_in - s.cash_return - s.card_return,
+            s.cash_return, s.cash_start, s.cash_end,
+            s.incassation, s.salary, s.pko, s.rko, s.submitted_by
+        ])
+
+    # Стилизация
+    for cell in ws[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal="center")
+
+    # Отправка файла
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name='ЖКО_экспорт.xlsx'
+    )
     # Автозаполнение остатка на начало = конец предыдущей смены
     last_shift = Shift.query.filter_by(user_id=current_user.id).order_by(Shift.date.desc()).first()
     if last_shift:
