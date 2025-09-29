@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Журнал кассира-операциониста (ЖКО)</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <table>
+        <tr><td>{{ form.date.label }}</td><td>{{ form.date() }}</td></tr>
+        <tr><td>{{ form.shift_number.label }}</td><td>{{ form.shift_number() }}</td></tr>
+        <tr><td>{{ form.clinic_id.label }}</td><td>{{ form.clinic_id() }}</td></tr>
+        <tr><td>{{ form.counter_start.label }}</td><td>{{ form.counter_start() }}</td></tr>
+        <tr><td>{{ form.counter_end.label }}</td><td>{{ form.counter_end() }}</td></tr>
+        <tr><td>{{ form.cash_in.label }}</td><td>{{ form.cash_in() }}</td></tr>
+        <tr><td>{{ form.card_in.label }}</td><td>{{ form.card_in() }}</td></tr>
+        <tr><td>{{ form.qr_in.label }}</td><td>{{ form.qr_in() }}</td></tr>
+        <tr><td>{{ form.cash_return.label }}</td><td>{{ form.cash_return() }}</td></tr>
+        <tr><td>{{ form.card_return.label }}</td><td>{{ form.card_return() }}</td></tr>
+        <tr><td>{{ form.uk_return.label }}</td><td>{{ form.uk_return() }}</td></tr>
+        <tr><td>{{ form.cash_start.label }}</td><td>{{ form.cash_start() }}</td></tr>
+        <tr><td>Остаток на конец (авто)</td><td id="cash_end">—</td></tr>
+        <tr><td>{{ form.incassation.label }}</td><td>{{ form.incassation() }}</td></tr>
+        <tr><td>{{ form.salary.label }}</td><td>{{ form.salary() }}</td></tr>
+        <tr><td>{{ form.exchange.label }}</td><td>{{ form.exchange() }}</td></tr>
+        <tr><td>{{ form.pko.label }}</td><td>{{ form.pko() }}</td></tr>
+        <tr><td>{{ form.rko.label }}</td><td>{{ form.rko() }}</td></tr>
+        <tr><td>{{ form.receipt_number.label }}</td><td>{{ form.receipt_number() }}</td></tr>
+        <tr><td>{{ form.submitted_by.label }}</td><td>{{ form.submitted_by() }}</td></tr>
+    </table>
+    <p>{{ form.submit() }}</p>
+</form>
+
+<script>
+document.addEventListener('input', function() {
+    const fields = ['cash_start', 'cash_in', 'incassation', 'salary', 'rko', 'pko', 'exchange'];
+    let sum = 0;
+    fields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) sum += parseFloat(el.value) || 0;
+    });
+    sum = sum - (parseFloat(document.getElementById('incassation').value) || 0)
+              - (parseFloat(document.getElementById('salary').value) || 0)
+              - (parseFloat(document.getElementById('rko').value) || 0);
+    document.getElementById('cash_end').textContent = sum.toFixed(2);
+});
+</script>
+{% endblock %}
