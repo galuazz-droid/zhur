@@ -26,20 +26,6 @@
         <tr><td>{{ form.submitted_by.label }}</td><td>{{ form.submitted_by() }}</td></tr>
     </table>
     <p>{{ form.submit() }}</p>
+    <p><a href="{{ url_for('main.export') }}">📥 Экспорт в Excel</a></p>
 </form>
-
-<script>
-document.addEventListener('input', function() {
-    const fields = ['cash_start', 'cash_in', 'incassation', 'salary', 'rko', 'pko', 'exchange'];
-    let sum = 0;
-    fields.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) sum += parseFloat(el.value) || 0;
-    });
-    sum = sum - (parseFloat(document.getElementById('incassation').value) || 0)
-              - (parseFloat(document.getElementById('salary').value) || 0)
-              - (parseFloat(document.getElementById('rko').value) || 0);
-    document.getElementById('cash_end').textContent = sum.toFixed(2);
-});
-</script>
 {% endblock %}
